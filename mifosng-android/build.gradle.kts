@@ -101,6 +101,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        compose = true
     }
 
     compileOptions {
@@ -110,6 +111,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
 }
 
@@ -228,4 +233,14 @@ dependencies {
 
     // sdk client
     implementation("com.github.openMF:fineract-client:2.0.3")
+
+    //compose
+    val composeBom = platform("androidx.compose:compose-bom:2024.01.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 }
