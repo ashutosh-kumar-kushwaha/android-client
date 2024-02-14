@@ -101,8 +101,8 @@ class SearchFragment : MifosBaseFragment() {
                 if(viewModel.searchUiState.value != null){
                     SearchScreen(
                         searchUiState = viewModel.searchUiState.value!!,
-                        onSearchClick = { query, exactMatch ->
-                            onClickSearch(query, exactMatch)
+                        onSearchClick = { query, exactMatch, selectedFilter ->
+                            onClickSearch(query, exactMatch, selectedFilter)
                         }
                     )
                 }
@@ -298,7 +298,7 @@ class SearchFragment : MifosBaseFragment() {
         super.onPause()
     }
 
-    private fun onClickSearch(query: String, exactMatch: Boolean) {
+    private fun onClickSearch(query: String, exactMatch: Boolean, resources: String?) {
 //        hideKeyboard(binding.etSearch)
         if (!Network.isOnline(requireContext())) {
             showMessage(getStringMessage(com.github.therajanmaurya.sweeterror.R.string.no_internet_connection))

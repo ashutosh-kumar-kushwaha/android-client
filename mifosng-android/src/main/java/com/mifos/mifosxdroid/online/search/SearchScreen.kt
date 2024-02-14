@@ -1,7 +1,6 @@
 package com.mifos.mifosxdroid.online.search
 
 import android.content.res.Configuration
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,17 +18,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,15 +39,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.drawable.toBitmapOrNull
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.mifos.mifosxdroid.R
@@ -53,7 +54,11 @@ import com.mifos.objects.SearchedEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean) -> Unit) {
+fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean, String?) -> Unit) {
+    val selectedFilter by remember { mutableIntStateOf(0) }
+    val searchOptions = stringArrayResource(id = R.array.search_options)
+    var showFilterDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -66,12 +71,12 @@ fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean) 
                 actions = {
                     IconButton(
                         onClick = {
-
+                            showFilterDialog = true
                         }
                     ) {
                         Row {
                             Text(
-                                text = "All",
+                                text = searchOptions[selectedFilter],
                                 fontSize = 16.sp
                             )
                             Icon(
@@ -91,6 +96,7 @@ fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean) 
                 .padding(it)
         ) {
             var searchText by remember { mutableStateOf("") }
+            var exactMatchChecked by remember { mutableStateOf(false) }
 
             OutlinedTextField(
                 value = searchText,
@@ -115,10 +121,12 @@ fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean) 
                 },
             )
             Spacer(modifier = Modifier.height(16.dp))
-            var exactMatchChecked by remember { mutableStateOf(false) }
             Button(
                 onClick = {
-                    onSearchClick(searchText, exactMatchChecked)
+                    onSearchClick(
+                        searchText,
+                        exactMatchChecked,
+                        if (selectedFilter == 0) null else searchOptions[selectedFilter])
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,6 +159,19 @@ fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean) 
                         ClientItem(searchUiState.searchedEntities[position])
                     }
                 }
+            }
+
+            if (showFilterDialog) {
+                FilterDialog(
+                    searchOptions = searchOptions,
+                    selected = selectedFilter,
+                    onSelected = {
+
+                    },
+                    onDismiss = {
+                        showFilterDialog = false
+                    }
+                )
             }
         }
     }
@@ -198,4 +219,47 @@ fun ClientItem(searchedEntity: SearchedEntity) {
 @Composable
 fun Preview() {
 //    ClientItem(searchUiState.searchedEntities[it])
+}
+
+@Composable
+fun FilterDialog(
+    searchOptions: Array<String>,
+    selected: Int,
+    onSelected: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss
+    ) {
+        Card {
+            Column {
+                searchOptions.forEachIndexed { position, text ->
+                    SearchOption(
+                        text = text,
+                        selected = selected == position,
+                        onSelected = {
+                            onSelected(position)
+                            onDismiss()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SearchOption(text: String, selected: Boolean, onSelected: () -> Unit) {
+    Row {
+        RadioButton(
+            selected = selected,
+            onClick = {
+                onSelected()
+            }
+        )
+        Text(
+            text = text,
+            fontSize = 16.sp
+        )
+    }
 }
