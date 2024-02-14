@@ -14,6 +14,8 @@ import android.view.animation.AnimationUtils
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,8 +37,6 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig
 
 @AndroidEntryPoint
 class SearchFragment : MifosBaseFragment() {
-
-    private lateinit var binding: FragmentClientSearchBinding
 
     private lateinit var viewModel: SearchViewModel
 
@@ -69,7 +69,6 @@ class SearchFragment : MifosBaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentClientSearchBinding.inflate(inflater, container, false)
         (activity as HomeActivity).supportActionBar?.title = getString(R.string.dashboard)
         viewModel = ViewModelProvider(this)[SearchViewModel::class.java]
         searchOptionsValues =
@@ -96,59 +95,71 @@ class SearchFragment : MifosBaseFragment() {
                 }
             }
         }
-        return binding.root
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                if(viewModel.searchUiState.value != null){
+                    SearchScreen(
+                        searchUiState = viewModel.searchUiState.value!!,
+                        onSearchClick = { query, exactMatch ->
+                            onClickSearch(query, exactMatch)
+                        }
+                    )
+                }
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.fabClient.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewClientFragment)
-        }
-
-        binding.fabCenter.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewCenterFragment)
-        }
-
-        binding.fabGroup.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewGroupFragment)
-        }
-
-        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClickSearch()
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
-        }
-
-
-        binding.btnSearch.setOnClickListener {
-            onClickSearch()
-        }
-
-        binding.fabCreate.setOnClickListener {
-            if (isFabOpen) {
-                binding.fabCreate.startAnimation(rotateBackward)
-                binding.fabClient.startAnimation(fabClose)
-                binding.fabCenter.startAnimation(fabClose)
-                binding.fabGroup.startAnimation(fabClose)
-                binding.fabClient.isClickable = false
-                binding.fabCenter.isClickable = false
-                binding.fabGroup.isClickable = false
-                isFabOpen = false
-            } else {
-                binding.fabCreate.startAnimation(rotateForward)
-                binding.fabClient.startAnimation(fabOpen)
-                binding.fabCenter.startAnimation(fabOpen)
-                binding.fabGroup.startAnimation(fabOpen)
-                binding.fabClient.isClickable = true
-                binding.fabCenter.isClickable = true
-                binding.fabGroup.isClickable = true
-                isFabOpen = true
-            }
-            autoTriggerSearch = false
-        }
+//        binding.fabClient.setOnClickListener {
+//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewClientFragment)
+//        }
+//
+//        binding.fabCenter.setOnClickListener {
+//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewCenterFragment)
+//        }
+//
+//        binding.fabGroup.setOnClickListener {
+//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewGroupFragment)
+//        }
+//
+//        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+//            if (actionId == EditorInfo.IME_ACTION_DONE) {
+//                onClickSearch()
+//                return@setOnEditorActionListener true
+//            }
+//            return@setOnEditorActionListener false
+//        }
+//
+//
+//        binding.btnSearch.setOnClickListener {
+//            onClickSearch()
+//        }
+//
+//        binding.fabCreate.setOnClickListener {
+//            if (isFabOpen) {
+//                binding.fabCreate.startAnimation(rotateBackward)
+//                binding.fabClient.startAnimation(fabClose)
+//                binding.fabCenter.startAnimation(fabClose)
+//                binding.fabGroup.startAnimation(fabClose)
+//                binding.fabClient.isClickable = false
+//                binding.fabCenter.isClickable = false
+//                binding.fabGroup.isClickable = false
+//                isFabOpen = false
+//            } else {
+//                binding.fabCreate.startAnimation(rotateForward)
+//                binding.fabClient.startAnimation(fabOpen)
+//                binding.fabCenter.startAnimation(fabOpen)
+//                binding.fabGroup.startAnimation(fabOpen)
+//                binding.fabClient.isClickable = true
+//                binding.fabCenter.isClickable = true
+//                binding.fabGroup.isClickable = true
+//                isFabOpen = true
+//            }
+//            autoTriggerSearch = false
+//        }
     }
 
     private fun showFilterDialog() {
@@ -169,64 +180,60 @@ class SearchFragment : MifosBaseFragment() {
     }
 
     private fun showUserInterface() {
-        searchOptionsAdapter = ArrayAdapter.createFromResource(
-            (requireActivity()),
-            R.array.search_options, android.R.layout.simple_spinner_item
-        )
-        searchOptionsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.filterSelectionButton.setOnClickListener { showFilterDialog() }
-        binding.filterSelectionButton.text =
-            getResources().getStringArray(R.array.search_options)[0]
-        binding.etSearch.requestFocus()
-        layoutManager = LinearLayoutManager(activity)
-        layoutManager.orientation = LinearLayoutManager.VERTICAL
-        binding.rvSearch.layoutManager = layoutManager
-        binding.rvSearch.setHasFixedSize(true)
-        searchAdapter = SearchAdapter { searchedEntity: SearchedEntity ->
-            when (searchedEntity.entityType) {
-                Constants.SEARCH_ENTITY_LOAN -> {
-                    val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
-                        ClientArgs(clientId = searchedEntity.entityId)
+//        searchOptionsAdapter = ArrayAdapter.createFromResource(
+//            (requireActivity()),
+//            R.array.search_options, android.R.layout.simple_spinner_item
+//        )
+//        searchOptionsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+//        binding.filterSelectionButton.setOnClickListener { showFilterDialog() }
+//        binding.filterSelectionButton.text =
+//            getResources().getStringArray(R.array.search_options)[0]
+//        binding.etSearch.requestFocus()
+//        binding.cbExactMatch.setOnCheckedChangeListener { _, _ -> onClickSearch() }
+//        showGuide()
+    }
+
+    private fun onSearchOptionClick(searchedEntity: SearchedEntity){
+        when (searchedEntity.entityType) {
+            Constants.SEARCH_ENTITY_LOAN -> {
+                val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
+                    ClientArgs(clientId = searchedEntity.entityId)
+                )
+                findNavController().navigate(action)
+            }
+
+            Constants.SEARCH_ENTITY_CLIENT -> {
+                val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
+                    ClientArgs(clientId = searchedEntity.entityId)
+                )
+                findNavController().navigate(action)
+            }
+
+            Constants.SEARCH_ENTITY_GROUP -> {
+                val action = searchedEntity.entityName?.let {
+                    SearchFragmentDirections.actionNavigationDashboardToGroupsActivity(
+                        searchedEntity.entityId,
+                        it
                     )
-                    findNavController().navigate(action)
                 }
+                action?.let { findNavController().navigate(it) }
+            }
 
-                Constants.SEARCH_ENTITY_CLIENT -> {
-                    val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
-                        ClientArgs(clientId = searchedEntity.entityId)
+            Constants.SEARCH_ENTITY_SAVING -> {
+                val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
+                    ClientArgs(savingsAccountNumber = searchedEntity.entityId)
+                )
+                findNavController().navigate(action)
+            }
+
+            Constants.SEARCH_ENTITY_CENTER -> {
+                val action =
+                    SearchFragmentDirections.actionNavigationDashboardToCentersActivity(
+                        searchedEntity.entityId
                     )
-                    findNavController().navigate(action)
-                }
-
-                Constants.SEARCH_ENTITY_GROUP -> {
-                    val action = searchedEntity.entityName?.let {
-                        SearchFragmentDirections.actionNavigationDashboardToGroupsActivity(
-                            searchedEntity.entityId,
-                            it
-                        )
-                    }
-                    action?.let { findNavController().navigate(it) }
-                }
-
-                Constants.SEARCH_ENTITY_SAVING -> {
-                    val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
-                        ClientArgs(savingsAccountNumber = searchedEntity.entityId)
-                    )
-                    findNavController().navigate(action)
-                }
-
-                Constants.SEARCH_ENTITY_CENTER -> {
-                    val action =
-                        SearchFragmentDirections.actionNavigationDashboardToCentersActivity(
-                            searchedEntity.entityId
-                        )
-                    findNavController().navigate(action)
-                }
+                findNavController().navigate(action)
             }
         }
-        binding.rvSearch.adapter = searchAdapter
-        binding.cbExactMatch.setOnCheckedChangeListener { _, _ -> onClickSearch() }
-        showGuide()
     }
 
     private fun showGuide() {
@@ -287,53 +294,21 @@ class SearchFragment : MifosBaseFragment() {
 
     override fun onPause() {
         //Fragment getting detached, keyboard if open must be hidden
-        hideKeyboard(binding.etSearch)
+//        hideKeyboard(binding.etSearch)
         super.onPause()
     }
 
-    /**
-     * There is a need for this method in the following cases :
-     *
-     *
-     * 1. If user entered a search query and went out of the app.
-     * 2. If user entered a search query and got some search results and went out of the app.
-     *
-     * @param outState
-     */
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        try {
-            val queryString = binding.etSearch.editableText.toString()
-            if (queryString != "") {
-                outState.putString(LOG_TAG + binding.etSearch.id, queryString)
-            }
-        } catch (npe: NullPointerException) {
-            //Looks like edit text didn't get initialized properly
-        }
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        if (savedInstanceState != null) {
-            val queryString = savedInstanceState.getString(LOG_TAG + binding.etSearch.id)
-            if (!TextUtils.isEmpty(queryString)) {
-                binding.etSearch.setText(queryString)
-            }
-        }
-    }
-
-    private fun onClickSearch() {
-        hideKeyboard(binding.etSearch)
+    private fun onClickSearch(query: String, exactMatch: Boolean) {
+//        hideKeyboard(binding.etSearch)
         if (!Network.isOnline(requireContext())) {
             showMessage(getStringMessage(com.github.therajanmaurya.sweeterror.R.string.no_internet_connection))
             return
         }
-        val query = binding.etSearch.editableText.toString().trim { it <= ' ' }
         if (query.isNotEmpty()) {
-            viewModel.searchResources(query, resources, binding.cbExactMatch.isChecked)
+            viewModel.searchResources(query, resources, exactMatch)
         } else {
             if (!autoTriggerSearch) {
-                show(binding.etSearch, getString(R.string.no_search_query_entered))
+                show(requireView(), getString(R.string.no_search_query_entered))
             }
         }
     }
