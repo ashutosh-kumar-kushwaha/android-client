@@ -98,14 +98,12 @@ class SearchFragment : MifosBaseFragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                if(viewModel.searchUiState.value != null){
-                    SearchScreen(
-                        searchUiState = viewModel.searchUiState.value!!,
-                        onSearchClick = { query, exactMatch, selectedFilter ->
-                            onClickSearch(query, exactMatch, selectedFilter)
-                        }
-                    )
-                }
+                SearchScreen(
+                    searchUiState = viewModel.searchUiState.value!!,
+                    onSearchClick = { query, exactMatch, selectedFilter ->
+                        onClickSearch(query, exactMatch, selectedFilter)
+                    }
+                )
             }
         }
     }
@@ -162,38 +160,13 @@ class SearchFragment : MifosBaseFragment() {
 //        }
     }
 
-    private fun showFilterDialog() {
-        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
-        dialogBuilder.setSingleChoiceItems(
-            R.array.search_options,
-            checkedFilter
-        ) { dialog, index ->
-            checkedFilter = index
-            resources = if (checkedFilter == 0) null else searchOptionsValues[checkedFilter - 1]
-            autoTriggerSearch = true
-            onClickSearch()
-            binding.filterSelectionButton.text =
-                getResources().getStringArray(R.array.search_options)[index]
-            dialog.dismiss()
-        }
-        dialogBuilder.show()
-    }
-
     private fun showUserInterface() {
-//        searchOptionsAdapter = ArrayAdapter.createFromResource(
-//            (requireActivity()),
-//            R.array.search_options, android.R.layout.simple_spinner_item
-//        )
-//        searchOptionsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//        binding.filterSelectionButton.setOnClickListener { showFilterDialog() }
-//        binding.filterSelectionButton.text =
-//            getResources().getStringArray(R.array.search_options)[0]
 //        binding.etSearch.requestFocus()
 //        binding.cbExactMatch.setOnCheckedChangeListener { _, _ -> onClickSearch() }
 //        showGuide()
     }
 
-    private fun onSearchOptionClick(searchedEntity: SearchedEntity){
+    private fun onSearchOptionClick(searchedEntity: SearchedEntity) {
         when (searchedEntity.entityType) {
             Constants.SEARCH_ENTITY_LOAN -> {
                 val action = SearchFragmentDirections.actionNavigationDashboardToClientActivity(
@@ -236,43 +209,38 @@ class SearchFragment : MifosBaseFragment() {
         }
     }
 
-    private fun showGuide() {
-        val config = ShowcaseConfig()
-        config.delay = 250 // half second between each showcase view
-        val sequence = MaterialShowcaseSequence(activity, "123")
-        sequence.setConfig(config)
-        var etSearchIntro: String = getString(R.string.et_search_intro)
-        var i = 1
-        for (s: String in searchOptionsValues) {
-            etSearchIntro += "\n$i.$s"
-            i++
-        }
-        val spSearchIntro = getString(R.string.sp_search_intro)
-        val cbExactMatchIntro = getString(R.string.cb_exactMatch_intro)
-        val btSearchIntro = getString(R.string.bt_search_intro)
-        sequence.addSequenceItem(
-            binding.etSearch,
-            etSearchIntro, getString(R.string.got_it)
-        )
-        sequence.addSequenceItem(
-            binding.filterSelectionButton,
-            spSearchIntro, getString(R.string.next)
-        )
-        sequence.addSequenceItem(
-            binding.cbExactMatch,
-            cbExactMatchIntro, getString(R.string.next)
-        )
-        sequence.addSequenceItem(
-            binding.btnSearch,
-            btSearchIntro, getString(R.string.finish)
-        )
-        sequence.start()
-    }
-
-    private fun showSearchedResources(searchedEntities: List<SearchedEntity>) {
-        searchAdapter.setSearchResults(searchedEntities)
-        this.searchedEntities = searchedEntities.toMutableList()
-    }
+//    private fun showGuide() {
+//        val config = ShowcaseConfig()
+//        config.delay = 250 // half second between each showcase view
+//        val sequence = MaterialShowcaseSequence(activity, "123")
+//        sequence.setConfig(config)
+//        var etSearchIntro: String = getString(R.string.et_search_intro)
+//        var i = 1
+//        for (s: String in searchOptionsValues) {
+//            etSearchIntro += "\n$i.$s"
+//            i++
+//        }
+//        val spSearchIntro = getString(R.string.sp_search_intro)
+//        val cbExactMatchIntro = getString(R.string.cb_exactMatch_intro)
+//        val btSearchIntro = getString(R.string.bt_search_intro)
+//        sequence.addSequenceItem(
+//            binding.etSearch,
+//            etSearchIntro, getString(R.string.got_it)
+//        )
+//        sequence.addSequenceItem(
+//            binding.filterSelectionButton,
+//            spSearchIntro, getString(R.string.next)
+//        )
+//        sequence.addSequenceItem(
+//            binding.cbExactMatch,
+//            cbExactMatchIntro, getString(R.string.next)
+//        )
+//        sequence.addSequenceItem(
+//            binding.btnSearch,
+//            btSearchIntro, getString(R.string.finish)
+//        )
+//        sequence.start()
+//    }
 
     private fun showNoResultFound() {
         searchedEntities.clear()

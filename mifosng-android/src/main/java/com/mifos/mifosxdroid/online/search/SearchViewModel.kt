@@ -5,6 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mifos.objects.SearchedEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
@@ -16,10 +19,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(private val repository: SearchRepository) : ViewModel() {
 
-    private val _searchUiState = MutableLiveData<SearchUiState>()
+    private val _searchUiState = MutableStateFlow<SearchUiState?>(null)
 
-    val searchUiState: LiveData<SearchUiState>
-        get() = _searchUiState
+    val searchUiState: StateFlow<SearchUiState?>
+        get() = _searchUiState.asStateFlow()
 
     fun searchResources(query: String?, resources: String?, exactMatch: Boolean?) {
         _searchUiState.value = SearchUiState.ShowProgress(true)

@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,10 +55,13 @@ import com.mifos.objects.SearchedEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean, String?) -> Unit) {
+fun SearchScreen(
+    viewModel: SearchViewModel
+) {
     val selectedFilter by remember { mutableIntStateOf(0) }
     val searchOptions = stringArrayResource(id = R.array.search_options)
     var showFilterDialog by remember { mutableStateOf(false) }
+    val searchUiState = viewModel.searchUiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -126,7 +130,8 @@ fun SearchScreen(searchUiState: SearchUiState, onSearchClick: (String, Boolean, 
                     onSearchClick(
                         searchText,
                         exactMatchChecked,
-                        if (selectedFilter == 0) null else searchOptions[selectedFilter])
+                        if (selectedFilter == 0) null else searchOptions[selectedFilter]
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
