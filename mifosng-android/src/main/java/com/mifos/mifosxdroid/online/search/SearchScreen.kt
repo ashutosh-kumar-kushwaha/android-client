@@ -1,7 +1,6 @@
 package com.mifos.mifosxdroid.online.search
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
@@ -49,6 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -172,6 +173,26 @@ fun SearchScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                 },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (searchText.isEmpty()) {
+                            viewModel.showError(context.getString(R.string.no_search_query_entered))
+                            return@KeyboardActions
+                        }
+                        viewModel.searchResources(
+                            searchText,
+                            if (selectedFilter == 0) null else searchOptions[selectedFilter],
+                            exactMatchChecked
+                        )
+                    }
+                ),
+                maxLines = 1,
+                textStyle = TextStyle(
+                    fontSize = 18.sp
+                )
             )
             Button(
                 onClick = {
@@ -217,13 +238,10 @@ fun SearchScreen(
                 )
             }
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 if (searchUiState.searchedEntities.isNotEmpty()) {
-                    items(
-                        count = searchUiState.searchedEntities.size,
-                        key = { position -> searchUiState.searchedEntities[position].entityId }
-                    ) { position ->
+                    items(searchUiState.searchedEntities.size) { position ->
                         ClientItem(
                             searchedEntity = searchUiState.searchedEntities[position],
                             onSearchOptionClick = onSearchOptionClick
