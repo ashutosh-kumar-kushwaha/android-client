@@ -1,8 +1,6 @@
 package com.mifos.mifosxdroid.online.search
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -21,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -52,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -65,10 +64,10 @@ import com.mifos.objects.SearchedEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel,
     onFabClick: (FabType) -> Unit,
     onSearchOptionClick: (SearchedEntity) -> Unit
 ) {
+    val viewModel: SearchViewModel = hiltViewModel()
     var selectedFilter by remember { mutableIntStateOf(0) }
     val searchOptions = stringArrayResource(id = R.array.search_options)
     var showFilterDialog by remember { mutableStateOf(false) }
@@ -142,7 +141,6 @@ fun SearchScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
                 .padding(it)
         ) {
             var searchText by remember { mutableStateOf("") }
@@ -194,7 +192,10 @@ fun SearchScreen(
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .wrapContentWidth()
+                    .clickable {
+                        exactMatchChecked = !exactMatchChecked
+                    },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
@@ -239,9 +240,11 @@ fun SearchScreen(
             }
 
             if (searchUiState.isLoading) {
-                Dialog(onDismissRequest = {}) {
-                    Text(text = "Loading...")
-                }
+                LoadingDialog(
+                    onDismissRequest = {
+                        viewModel.dismissDialog()
+                    }
+                )
             }
         }
     }
@@ -253,16 +256,11 @@ fun SearchScreenPreview() {
 //    SearchScreen()
 }
 
-@Preview(showSystemUi = true, showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_UNDEFINED)
-@Composable
-fun SearchScreenPreviewNight() {
-//    SearchScreen()
-}
-
 @Composable
 fun ClientItem(searchedEntity: SearchedEntity, onSearchOptionClick: (SearchedEntity) -> Unit) {
     val color = ColorGenerator.MATERIAL.getColor(searchedEntity.entityType)
-    val drawable = TextDrawable.builder().round().build(searchedEntity.entityType?.get(0).toString(), color)
+    val drawable =
+        TextDrawable.builder().round().build(searchedEntity.entityType?.get(0).toString(), color)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -284,12 +282,6 @@ fun ClientItem(searchedEntity: SearchedEntity, onSearchOptionClick: (SearchedEnt
             fontSize = 16.sp
         )
     }
-}
-
-@Preview
-@Composable
-fun Preview() {
-//    ClientItem(searchUiState.searchedEntities[it])
 }
 
 @Composable
@@ -339,5 +331,23 @@ fun SearchOption(text: String, selected: Boolean, onSelected: () -> Unit) {
             text = text,
             fontSize = 16.sp
         )
+    }
+}
+
+@Composable
+fun LoadingDialog(
+    onDismissRequest: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Loading...",
+                fontSize = 16.sp
+            )
+        }
     }
 }
