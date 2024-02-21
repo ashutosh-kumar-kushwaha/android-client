@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,7 +61,8 @@ import com.mifos.objects.SearchedEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    onSearchOptionClick: (SearchedEntity) -> Unit
 ) {
     val selectedFilter by remember { mutableIntStateOf(0) }
     val searchOptions = stringArrayResource(id = R.array.search_options)
@@ -176,7 +178,10 @@ fun SearchScreen(
             LazyColumn {
                 if (searchUiState.searchedEntities.isNotEmpty()) {
                     items(searchUiState.searchedEntities.size) { position ->
-                        ClientItem(searchUiState.searchedEntities[position])
+                        ClientItem(
+                            searchedEntity = searchUiState.searchedEntities[position],
+                            onSearchOptionClick = onSearchOptionClick
+                        )
                     }
                 }
             }
@@ -195,12 +200,12 @@ fun SearchScreen(
             }
 
             if (searchUiState.error != null) {
-                LaunchedEffect(searchUiState.error){
+                LaunchedEffect(searchUiState.error) {
                     snackbarHostState.showSnackbar(searchUiState.error)
                 }
             }
 
-            if (searchUiState.isLoading){
+            if (searchUiState.isLoading) {
                 // Show loading
             }
         }
@@ -220,7 +225,7 @@ fun SearchScreenPreviewNight() {
 }
 
 @Composable
-fun ClientItem(searchedEntity: SearchedEntity) {
+fun ClientItem(searchedEntity: SearchedEntity, onSearchOptionClick: (SearchedEntity) -> Unit) {
     val color = ColorGenerator.MATERIAL.getColor(searchedEntity.entityType)
     val drawable =
         TextDrawable.builder().round().build(searchedEntity.entityType ?: "", color) as Drawable
@@ -229,6 +234,9 @@ fun ClientItem(searchedEntity: SearchedEntity) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .clickable {
+                onSearchOptionClick(searchedEntity)
+            }
     ) {
         Image(
             modifier = Modifier

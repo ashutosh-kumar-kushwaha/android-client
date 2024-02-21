@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,7 +39,7 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig
 @AndroidEntryPoint
 class SearchFragment : MifosBaseFragment() {
 
-    private lateinit var viewModel: SearchViewModel
+    private val viewModel by viewModels<SearchViewModel>()
     private var resources: String? = null
     private var isFabOpen = false
     private lateinit var fabOpen: Animation
@@ -61,13 +62,14 @@ class SearchFragment : MifosBaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         (activity as HomeActivity).supportActionBar?.title = getString(R.string.dashboard)
-        viewModel = ViewModelProvider(this)[SearchViewModel::class.java]
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 SearchScreen(
                     viewModel = viewModel
-                )
+                ){ searchedEntity ->
+                    onSearchOptionClick(searchedEntity)
+                }
             }
         }
     }
