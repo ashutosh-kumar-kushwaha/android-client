@@ -1,7 +1,6 @@
 package com.mifos.mifosxdroid.online.search
 
 import android.content.res.Configuration
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,9 +52,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.graphics.drawable.toBitmap
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.mifos.mifosxdroid.R
 import com.mifos.mifosxdroid.views.FabButton
 import com.mifos.mifosxdroid.views.FabButtonState
@@ -263,8 +262,7 @@ fun SearchScreenPreviewNight() {
 @Composable
 fun ClientItem(searchedEntity: SearchedEntity, onSearchOptionClick: (SearchedEntity) -> Unit) {
     val color = ColorGenerator.MATERIAL.getColor(searchedEntity.entityType)
-    val drawable =
-        TextDrawable.builder().round().build(searchedEntity.entityType ?: "", color) as Drawable
+    val drawable = TextDrawable.builder().round().build(searchedEntity.entityType?.get(0).toString(), color)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -279,12 +277,11 @@ fun ClientItem(searchedEntity: SearchedEntity, onSearchOptionClick: (SearchedEnt
                 .width(50.dp)
                 .height(50.dp),
             contentDescription = null,
-            bitmap = drawable.toBitmap().asImageBitmap(),
+            painter = rememberDrawablePainter(drawable = drawable),
         )
         Text(
             text = searchedEntity.entityName ?: "",
-            fontSize = 16.sp,
-            color = Color.White
+            fontSize = 16.sp
         )
     }
 }
