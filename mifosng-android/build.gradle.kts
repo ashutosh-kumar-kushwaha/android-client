@@ -250,4 +250,7 @@ dependencies {
     // ViewModel utilities for Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
+
 }
