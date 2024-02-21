@@ -39,14 +39,6 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig
 class SearchFragment : MifosBaseFragment() {
 
     private lateinit var viewModel: SearchViewModel
-
-    private lateinit var searchOptionsValues: Array<String>
-    private lateinit var searchAdapter: SearchAdapter
-
-    // determines weather search is triggered by user or system
-    private var autoTriggerSearch = false
-    private lateinit var searchedEntities: MutableList<SearchedEntity>
-    private lateinit var searchOptionsAdapter: ArrayAdapter<CharSequence>
     private var resources: String? = null
     private var isFabOpen = false
     private lateinit var fabOpen: Animation
@@ -57,7 +49,6 @@ class SearchFragment : MifosBaseFragment() {
     private var checkedFilter = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        searchedEntities = ArrayList()
         fabOpen = AnimationUtils.loadAnimation(context, R.anim.fab_open)
         fabClose = AnimationUtils.loadAnimation(context, R.anim.fab_close)
         rotateForward = AnimationUtils.loadAnimation(context, R.anim.rotate_forward)
@@ -71,38 +62,11 @@ class SearchFragment : MifosBaseFragment() {
     ): View {
         (activity as HomeActivity).supportActionBar?.title = getString(R.string.dashboard)
         viewModel = ViewModelProvider(this)[SearchViewModel::class.java]
-        searchOptionsValues =
-            requireActivity().resources.getStringArray(R.array.search_options_values)
-        showUserInterface()
-
-
-        viewModel.searchUiState.observe(viewLifecycleOwner) {
-            when (it) {
-                is SearchUiState.ShowProgress -> showProgressbar(it.state)
-                is SearchUiState.ShowSearchedResources -> {
-                    showProgressbar(false)
-                    showSearchedResources(it.searchedEntities)
-                }
-
-                is SearchUiState.ShowError -> {
-                    showProgressbar(false)
-                    showMessage(it.message)
-                }
-
-                is SearchUiState.ShowNoResultFound -> {
-                    showProgressbar(false)
-                    showNoResultFound()
-                }
-            }
-        }
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 SearchScreen(
-                    searchUiState = viewModel.searchUiState.value!!,
-                    onSearchClick = { query, exactMatch, selectedFilter ->
-                        onClickSearch(query, exactMatch, selectedFilter)
-                    }
+                    viewModel = viewModel
                 )
             }
         }
@@ -158,12 +122,6 @@ class SearchFragment : MifosBaseFragment() {
 //            }
 //            autoTriggerSearch = false
 //        }
-    }
-
-    private fun showUserInterface() {
-//        binding.etSearch.requestFocus()
-//        binding.cbExactMatch.setOnCheckedChangeListener { _, _ -> onClickSearch() }
-//        showGuide()
     }
 
     private fun onSearchOptionClick(searchedEntity: SearchedEntity) {
@@ -242,44 +200,7 @@ class SearchFragment : MifosBaseFragment() {
 //        sequence.start()
 //    }
 
-    private fun showNoResultFound() {
-        searchedEntities.clear()
-        searchAdapter.notifyDataSetChanged()
-        show(binding.etSearch, getString(R.string.no_search_result_found))
-    }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showProgressbar(b: Boolean) {
-        if (b) {
-            showMifosProgressDialog()
-        } else {
-            hideMifosProgressDialog()
-        }
-    }
-
-    override fun onPause() {
-        //Fragment getting detached, keyboard if open must be hidden
-//        hideKeyboard(binding.etSearch)
-        super.onPause()
-    }
-
-    private fun onClickSearch(query: String, exactMatch: Boolean, resources: String?) {
-//        hideKeyboard(binding.etSearch)
-        if (!Network.isOnline(requireContext())) {
-            showMessage(getStringMessage(com.github.therajanmaurya.sweeterror.R.string.no_internet_connection))
-            return
-        }
-        if (query.isNotEmpty()) {
-            viewModel.searchResources(query, resources, exactMatch)
-        } else {
-            if (!autoTriggerSearch) {
-                show(requireView(), getString(R.string.no_search_query_entered))
-            }
-        }
-    }
 
     companion object {
         private val LOG_TAG = SearchFragment::class.java.simpleName

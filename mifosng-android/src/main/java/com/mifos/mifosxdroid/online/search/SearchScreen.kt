@@ -27,9 +27,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -40,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,7 +65,9 @@ fun SearchScreen(
     val selectedFilter by remember { mutableIntStateOf(0) }
     val searchOptions = stringArrayResource(id = R.array.search_options)
     var showFilterDialog by remember { mutableStateOf(false) }
-    val searchUiState = viewModel.searchUiState.collectAsState()
+    val searchUiState = viewModel.searchUiState.collectAsState().value
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -90,6 +96,11 @@ fun SearchScreen(
                         }
                     }
                 }
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
             )
         }
     ) {
@@ -127,10 +138,14 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    onSearchClick(
+                    if (searchText.isEmpty()) {
+                        viewModel.showError(context.getString(R.string.no_search_query_entered))
+                        return@Button
+                    }
+                    viewModel.searchResources(
                         searchText,
-                        exactMatchChecked,
-                        if (selectedFilter == 0) null else searchOptions[selectedFilter]
+                        if (selectedFilter == 0) null else searchOptions[selectedFilter],
+                        exactMatchChecked
                     )
                 },
                 modifier = Modifier
@@ -159,7 +174,7 @@ fun SearchScreen(
                 )
             }
             LazyColumn {
-                if (searchUiState is SearchUiState.ShowSearchedResources) {
+                if (searchUiState.searchedEntities.isNotEmpty()) {
                     items(searchUiState.searchedEntities.size) { position ->
                         ClientItem(searchUiState.searchedEntities[position])
                     }
@@ -177,6 +192,16 @@ fun SearchScreen(
                         showFilterDialog = false
                     }
                 )
+            }
+
+            if (searchUiState.error != null) {
+                LaunchedEffect(searchUiState.error){
+                    snackbarHostState.showSnackbar(searchUiState.error)
+                }
+            }
+
+            if (searchUiState.isLoading){
+                // Show loading
             }
         }
     }

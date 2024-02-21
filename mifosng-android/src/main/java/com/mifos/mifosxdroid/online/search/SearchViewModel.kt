@@ -1,7 +1,6 @@
 package com.mifos.mifosxdroid.online.search
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+
 import androidx.lifecycle.ViewModel
 import com.mifos.objects.SearchedEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,29 +18,33 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(private val repository: SearchRepository) : ViewModel() {
 
-    private val _searchUiState = MutableStateFlow<SearchUiState?>(null)
+    private val _searchUiState = MutableStateFlow(SearchUiState())
 
-    val searchUiState: StateFlow<SearchUiState?>
+    val searchUiState: StateFlow<SearchUiState>
         get() = _searchUiState.asStateFlow()
 
     fun searchResources(query: String?, resources: String?, exactMatch: Boolean?) {
-        _searchUiState.value = SearchUiState.ShowProgress(true)
+        _searchUiState.value = _searchUiState.value.copy(isLoading = true)
         repository.searchResources(query, resources, exactMatch)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .subscribe(object : Subscriber<List<SearchedEntity>>() {
                 override fun onCompleted() {}
                 override fun onError(e: Throwable) {
-                    _searchUiState.value = SearchUiState.ShowError(e.message.toString())
+                    _searchUiState.value = _searchUiState.value.copy(isLoading = false, error = e.message)
                 }
 
                 override fun onNext(searchedEntities: List<SearchedEntity>) {
                     if (searchedEntities.isEmpty()) {
-                        _searchUiState.value = SearchUiState.ShowNoResultFound
+                        _searchUiState.value = SearchUiState(error = "No Search Result found", searchedEntities = emptyList())
                     } else {
-                        _searchUiState.value = SearchUiState.ShowSearchedResources(searchedEntities)
+                        _searchUiState.value = SearchUiState(searchedEntities = searchedEntities)
                     }
                 }
             })
+    }
+
+    fun showError(error: String){
+        _searchUiState.value = _searchUiState.value.copy(error = error)
     }
 }
