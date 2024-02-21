@@ -19,3 +19,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "AndroidClient"
 include(":mifosng-android")
+include(":core:designsystem")
+include(":core:datastore")
+include(":core:common")
+include(":feature:auth")
+include(":core:network")
+include(":core:data")

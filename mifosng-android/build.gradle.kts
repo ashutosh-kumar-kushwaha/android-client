@@ -19,12 +19,12 @@ apply(from = "../config/quality/quality.gradle")
 
 android {
     namespace = "com.mifos.mifosxdroid"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.mifos.mifosxdroid"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 6
         versionName = "1.0.1"
 
@@ -104,6 +104,10 @@ android {
         compose = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -112,13 +116,12 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.5"
-    }
 }
 
 dependencies {
+
+    implementation(project(":feature:auth"))
+
     // Multidex dependency
     implementation("androidx.multidex:multidex:2.0.1")
 
@@ -126,7 +129,7 @@ dependencies {
     implementation("com.github.amulyakhare:TextDrawable:558677ea31")
 
     // Kotlin standard library
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
 
     //DBFlow dependencies
     kapt("com.github.raizlabs.dbflow.dbflow:dbflow-processor:3.1.1")
@@ -225,8 +228,8 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.6.0")
 
     // Hilt dependency
-    implementation("com.google.dagger:hilt-android:2.44")
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-android-compiler:2.50")
 
     // fineract sdk dependencies
     implementation("com.github.openMF:mifos-android-sdk-arch:1.06")
@@ -234,15 +237,17 @@ dependencies {
     // sdk client
     implementation("com.github.openMF:fineract-client:2.0.3")
 
-    //compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.01.00")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    // Jetpack Compose
+    implementation("androidx.compose.material:material:1.6.0")
+    implementation("androidx.compose.compiler:compiler:1.5.8")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.1")
     implementation("androidx.activity:activity-compose:1.8.2")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.1")
+    implementation("androidx.compose.material3:material3:1.1.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.compose.runtime:runtime:1.6.1")
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")
+
+    // ViewModel utilities for Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 }
