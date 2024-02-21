@@ -17,15 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -72,7 +70,7 @@ fun SearchScreen(
     onFabClick: (FabType) -> Unit,
     onSearchOptionClick: (SearchedEntity) -> Unit
 ) {
-    val selectedFilter by remember { mutableIntStateOf(0) }
+    var selectedFilter by remember { mutableIntStateOf(0) }
     val searchOptions = stringArrayResource(id = R.array.search_options)
     var showFilterDialog by remember { mutableStateOf(false) }
     val searchUiState = viewModel.searchUiState.collectAsState().value
@@ -90,10 +88,14 @@ fun SearchScreen(
                     )
                 },
                 actions = {
-                    IconButton(
+                    Button(
                         onClick = {
                             showFilterDialog = true
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Row {
                             Text(
@@ -141,7 +143,7 @@ fun SearchScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(it)
         ) {
             var searchText by remember { mutableStateOf("") }
@@ -223,7 +225,7 @@ fun SearchScreen(
                     searchOptions = searchOptions,
                     selected = selectedFilter,
                     onSelected = {
-
+                        selectedFilter = it
                     },
                     onDismiss = {
                         showFilterDialog = false
@@ -238,7 +240,9 @@ fun SearchScreen(
             }
 
             if (searchUiState.isLoading) {
-                // Show loading
+                Dialog(onDismissRequest = {}) {
+                    Text(text = "Loading...")
+                }
             }
         }
     }
@@ -320,7 +324,14 @@ fun FilterDialog(
 
 @Composable
 fun SearchOption(text: String, selected: Boolean, onSelected: () -> Unit) {
-    Row {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onSelected()
+            }
+    ) {
         RadioButton(
             selected = selected,
             onClick = {
