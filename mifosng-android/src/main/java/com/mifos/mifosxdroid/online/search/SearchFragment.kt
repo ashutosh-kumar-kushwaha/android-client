@@ -5,36 +5,24 @@
 package com.mifos.mifosxdroid.online.search
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.inputmethod.EditorInfo
-import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mifos.mifosxdroid.activity.home.HomeActivity
 import com.mifos.mifosxdroid.R
-import com.mifos.mifosxdroid.adapters.SearchAdapter
 import com.mifos.mifosxdroid.core.MifosBaseFragment
-import com.mifos.mifosxdroid.core.util.Toaster.show
-import com.mifos.mifosxdroid.databinding.FragmentClientSearchBinding
+import com.mifos.mifosxdroid.views.FabType
 import com.mifos.objects.SearchedEntity
 import com.mifos.objects.navigation.ClientArgs
 import com.mifos.utils.Constants
-import com.mifos.utils.Network
 import dagger.hilt.android.AndroidEntryPoint
-import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence
-import uk.co.deanwild.materialshowcaseview.ShowcaseConfig
-
 
 @AndroidEntryPoint
 class SearchFragment : MifosBaseFragment() {
@@ -66,7 +54,10 @@ class SearchFragment : MifosBaseFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 SearchScreen(
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onFabClick = { fabType ->
+                        onFabClick(fabType)
+                    },
                 ){ searchedEntity ->
                     onSearchOptionClick(searchedEntity)
                 }
@@ -74,21 +65,22 @@ class SearchFragment : MifosBaseFragment() {
         }
     }
 
+    private fun onFabClick(fabType: FabType) {
+        when (fabType) {
+            FabType.CLIENT -> {
+                findNavController().navigate(R.id.action_navigation_dashboard_to_createNewClientFragment)
+            }
+            FabType.CENTER -> {
+                findNavController().navigate(R.id.action_navigation_dashboard_to_createNewCenterFragment)
+            }
+            FabType.GROUP -> {
+                findNavController().navigate(R.id.action_navigation_dashboard_to_createNewGroupFragment)
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        binding.fabClient.setOnClickListener {
-//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewClientFragment)
-//        }
-//
-//        binding.fabCenter.setOnClickListener {
-//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewCenterFragment)
-//        }
-//
-//        binding.fabGroup.setOnClickListener {
-//            findNavController().navigate(R.id.action_navigation_dashboard_to_createNewGroupFragment)
-//        }
-//
 //        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
 //            if (actionId == EditorInfo.IME_ACTION_DONE) {
 //                onClickSearch()

@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -56,12 +59,17 @@ import androidx.core.graphics.drawable.toBitmap
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.mifos.mifosxdroid.R
+import com.mifos.mifosxdroid.views.FabButton
+import com.mifos.mifosxdroid.views.FabButtonState
+import com.mifos.mifosxdroid.views.FabType
+import com.mifos.mifosxdroid.views.MultiFloatingActionButton
 import com.mifos.objects.SearchedEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
+    onFabClick: (FabType) -> Unit,
     onSearchOptionClick: (SearchedEntity) -> Unit
 ) {
     val selectedFilter by remember { mutableIntStateOf(0) }
@@ -70,6 +78,7 @@ fun SearchScreen(
     val searchUiState = viewModel.searchUiState.collectAsState().value
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    var fabButtonState by remember { mutableStateOf<FabButtonState>(FabButtonState.Collapsed) }
 
     Scaffold(
         topBar = {
@@ -103,6 +112,29 @@ fun SearchScreen(
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState
+            )
+        },
+        floatingActionButton = {
+            MultiFloatingActionButton(
+                fabButtons = listOf(
+                    FabButton(
+                        fabType = FabType.CLIENT,
+                        iconRes = R.drawable.ic_person_black_24dp
+                    ),
+                    FabButton(
+                        fabType = FabType.CENTER,
+                        iconRes = R.drawable.ic_centers_24dp
+                    ),
+                    FabButton(
+                        fabType = FabType.GROUP,
+                        iconRes = R.drawable.ic_group_black_24dp
+                    )
+                ),
+                fabButtonState = fabButtonState,
+                onFabButtonStateChange = {
+                    fabButtonState = it
+                },
+                onFabClick = onFabClick
             )
         }
     ) {
