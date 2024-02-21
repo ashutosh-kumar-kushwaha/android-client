@@ -1,6 +1,7 @@
 package com.mifos.mifosxdroid.online.search
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
@@ -142,6 +146,8 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             var searchText by remember { mutableStateOf("") }
             var exactMatchChecked by remember { mutableStateOf(false) }
@@ -152,8 +158,7 @@ fun SearchScreen(
                     searchText = it
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .fillMaxWidth(),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -168,7 +173,6 @@ fun SearchScreen(
                     )
                 },
             )
-            Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     if (searchText.isEmpty()) {
@@ -183,7 +187,6 @@ fun SearchScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.search),
@@ -195,23 +198,32 @@ fun SearchScreen(
                     .wrapContentWidth()
                     .clickable {
                         exactMatchChecked = !exactMatchChecked
-                    },
+                    }
+                    .padding(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = exactMatchChecked,
                     onCheckedChange = {
                         exactMatchChecked = it
-                    }
+                    },
+                    modifier = Modifier
+                        .size(20.dp)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(id = R.string.exact_match),
                     fontSize = 16.sp
                 )
             }
-            LazyColumn {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 if (searchUiState.searchedEntities.isNotEmpty()) {
-                    items(searchUiState.searchedEntities.size) { position ->
+                    items(
+                        count = searchUiState.searchedEntities.size,
+                        key = { position -> searchUiState.searchedEntities[position].entityId }
+                    ) { position ->
                         ClientItem(
                             searchedEntity = searchUiState.searchedEntities[position],
                             onSearchOptionClick = onSearchOptionClick
@@ -339,15 +351,19 @@ fun LoadingDialog(
     onDismissRequest: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Loading...",
-                fontSize = 16.sp
-            )
+        Card {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 32.dp, vertical = 16.dp)
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Loading...",
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
