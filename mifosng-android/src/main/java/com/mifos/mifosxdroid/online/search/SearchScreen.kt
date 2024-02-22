@@ -266,6 +266,7 @@ fun SearchScreen(
             if (searchUiState.error != null) {
                 LaunchedEffect(searchUiState.error) {
                     snackbarHostState.showSnackbar(searchUiState.error)
+                    viewModel.resetErrorMessage()
                 }
             }
 

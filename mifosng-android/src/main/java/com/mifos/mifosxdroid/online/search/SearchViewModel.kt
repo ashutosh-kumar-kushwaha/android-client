@@ -51,4 +51,8 @@ class SearchViewModel @Inject constructor(private val repository: SearchReposito
     fun dismissDialog() {
         _searchUiState.value = _searchUiState.value.copy(isLoading = false)
     }
+
+    fun resetErrorMessage(){
+        _searchUiState.value = _searchUiState.value.copy(error = null)
+    }
 }
