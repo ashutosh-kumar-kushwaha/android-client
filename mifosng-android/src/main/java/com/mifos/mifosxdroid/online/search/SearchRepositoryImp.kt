@@ -10,7 +10,7 @@ import javax.inject.Inject
  */
 class SearchRepositoryImp @Inject constructor(private val dataManagerSearch: DataManagerSearch) :
     SearchRepository {
-    override fun searchResources(
+    override suspend fun searchResources(
         query: String?,
         resources: String?,
         exactMatch: Boolean?

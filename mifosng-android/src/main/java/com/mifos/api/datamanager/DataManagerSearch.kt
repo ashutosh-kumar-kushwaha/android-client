@@ -11,7 +11,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class DataManagerSearch @Inject constructor(private val baseApiManager: BaseApiManager) {
-    fun searchResources(
+    suspend fun searchResources(
         query: String?, resources: String?,
         exactMatch: Boolean?
     ): List<SearchedEntity> {
