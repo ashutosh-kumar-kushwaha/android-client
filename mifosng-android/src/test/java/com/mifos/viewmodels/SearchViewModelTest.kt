@@ -23,12 +23,6 @@ import rx.Observable
 @RunWith(MockitoJUnitRunner::class)
 class SearchViewModelTest {
 
-    @get:Rule
-    val overrideSchedulersRule = RxSchedulersOverrideRule()
-
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
-
     @Mock
     lateinit var searchRepository: SearchRepository
 
