@@ -284,7 +284,10 @@ fun SearchScreen(
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun SearchScreenPreview() {
-//    SearchScreen()
+    SearchScreen(
+        onFabClick = {},
+        onSearchOptionClick = {}
+    )
 }
 
 @Composable

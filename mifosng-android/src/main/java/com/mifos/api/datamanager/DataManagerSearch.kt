@@ -14,7 +14,7 @@ class DataManagerSearch @Inject constructor(private val baseApiManager: BaseApiM
     fun searchResources(
         query: String?, resources: String?,
         exactMatch: Boolean?
-    ): Observable<List<SearchedEntity>> {
+    ): List<SearchedEntity> {
         return baseApiManager.searchApi.searchResources(query, resources, exactMatch)
     }
 }

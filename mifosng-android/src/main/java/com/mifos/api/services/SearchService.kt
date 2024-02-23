@@ -19,5 +19,5 @@ interface SearchService {
         @Query("query") clientName: String?,
         @Query("resource") resources: String?,
         @Query("exactMatch") exactMatch: Boolean?
-    ): Observable<List<SearchedEntity>>
+    ): List<SearchedEntity>
 }

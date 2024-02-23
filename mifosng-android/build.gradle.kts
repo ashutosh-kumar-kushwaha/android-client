@@ -121,6 +121,7 @@ android {
 dependencies {
 
     implementation(project(":feature:auth"))
+    implementation(project(":core:common"))
 
     // Multidex dependency
     implementation("androidx.multidex:multidex:2.0.1")
@@ -252,5 +253,7 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
 
 }

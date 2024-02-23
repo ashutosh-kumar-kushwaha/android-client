@@ -14,7 +14,7 @@ class SearchRepositoryImp @Inject constructor(private val dataManagerSearch: Dat
         query: String?,
         resources: String?,
         exactMatch: Boolean?
-    ): Observable<List<SearchedEntity>> {
+    ): List<SearchedEntity> {
         return dataManagerSearch.searchResources(query, resources, exactMatch)
     }
 

@@ -2,21 +2,21 @@ package com.mifos.mifosxdroid.online.search
 
 
 import androidx.lifecycle.ViewModel
-import com.mifos.objects.SearchedEntity
+import androidx.lifecycle.viewModelScope
+import com.mifos.core.common.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import rx.Subscriber
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 /**
  * Created by Aditya Gupta on 06/08/23.
  */
 @HiltViewModel
-class SearchViewModel @Inject constructor(private val repository: SearchRepository) : ViewModel() {
+class SearchViewModel @Inject constructor(private val searchUseCase: SearchUseCase) : ViewModel() {
 
     private val _searchUiState = MutableStateFlow(SearchUiState())
 
@@ -24,27 +24,24 @@ class SearchViewModel @Inject constructor(private val repository: SearchReposito
         get() = _searchUiState.asStateFlow()
 
     fun searchResources(query: String?, resources: String?, exactMatch: Boolean?) {
-        _searchUiState.value = _searchUiState.value.copy(isLoading = true)
-        repository.searchResources(query, resources, exactMatch)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())
-            .subscribe(object : Subscriber<List<SearchedEntity>>() {
-                override fun onCompleted() {}
-                override fun onError(e: Throwable) {
-                    _searchUiState.value = _searchUiState.value.copy(isLoading = false, error = e.message)
+        searchUseCase(query, resources, exactMatch).onEach {
+            when (it) {
+                is Resource.Loading -> {
+                    _searchUiState.value = _searchUiState.value.copy(isLoading = true)
                 }
 
-                override fun onNext(searchedEntities: List<SearchedEntity>) {
-                    if (searchedEntities.isEmpty()) {
-                        _searchUiState.value = SearchUiState(error = "No Search Result found", searchedEntities = emptyList())
-                    } else {
-                        _searchUiState.value = SearchUiState(searchedEntities = searchedEntities)
-                    }
+                is Resource.Success -> {
+                    _searchUiState.value = SearchUiState(searchedEntities = it.data!!)
                 }
-            })
+
+                is Resource.Error -> {
+                    _searchUiState.value = _searchUiState.value.copy(isLoading = false, error = it.message)
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
-    fun showError(error: String){
+    fun showError(error: String) {
         _searchUiState.value = _searchUiState.value.copy(error = error)
     }
 
@@ -52,7 +49,7 @@ class SearchViewModel @Inject constructor(private val repository: SearchReposito
         _searchUiState.value = _searchUiState.value.copy(isLoading = false)
     }
 
-    fun resetErrorMessage(){
+    fun resetErrorMessage() {
         _searchUiState.value = _searchUiState.value.copy(error = null)
     }
 }

@@ -12,6 +12,6 @@ interface SearchRepository {
         query: String?,
         resources: String?,
         exactMatch: Boolean?
-    ): Observable<List<SearchedEntity>>
+    ): List<SearchedEntity>
 
 }
