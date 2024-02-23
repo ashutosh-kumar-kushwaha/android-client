@@ -1,13 +1,11 @@
 package com.mifos.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
 import com.mifos.mifosxdroid.util.RxSchedulersOverrideRule
 import com.mifos.objects.SearchedEntity
 import com.mifos.mifosxdroid.online.search.SearchRepository
 import com.mifos.mifosxdroid.online.search.SearchViewModel
-import com.mifos.mifosxdroid.online.search.SearchUiState
-import org.junit.After
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -34,9 +32,6 @@ class SearchViewModelTest {
     @Mock
     lateinit var searchRepository: SearchRepository
 
-    @Mock
-    lateinit var searchUiStateObserver: Observer<SearchUiState>
-
     private lateinit var searchViewModel: SearchViewModel
 
     @Mock
@@ -47,7 +42,6 @@ class SearchViewModelTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
         searchViewModel = SearchViewModel(searchRepository)
-        searchViewModel.searchUiState.observeForever(searchUiStateObserver)
     }
 
 
@@ -64,11 +58,13 @@ class SearchViewModelTest {
             Observable.just(searchedEntities)
         )
         searchViewModel.searchResources("query", "resources", false)
-        Mockito.verify(searchUiStateObserver).onChanged(SearchUiState.ShowProgress(true))
-        Mockito.verify(searchUiStateObserver, Mockito.never())
-            .onChanged(SearchUiState.ShowError("error"))
-        Mockito.verify(searchUiStateObserver)
-            .onChanged(SearchUiState.ShowSearchedResources(searchedEntities))
+        runBlocking {
+            searchViewModel.searchUiState.collect{
+                assertEquals(it.isLoading, false)
+                assertEquals(it.error, null)
+                assertEquals(it.searchedEntities, searchedEntities)
+            }
+        }
     }
 
     @Test
@@ -83,15 +79,12 @@ class SearchViewModelTest {
             Observable.error(RuntimeException("some error message"))
         )
         searchViewModel.searchResources("query", "resources", false)
-        Mockito.verify(searchUiStateObserver).onChanged(SearchUiState.ShowProgress(true))
-        Mockito.verify(searchUiStateObserver)
-            .onChanged(SearchUiState.ShowError("some error message"))
-        Mockito.verify(searchUiStateObserver, Mockito.never())
-            .onChanged(SearchUiState.ShowSearchedResources(searchedEntities))
-    }
-
-    @After
-    fun tearDown() {
-        searchViewModel.searchUiState.removeObserver(searchUiStateObserver)
+        runBlocking {
+            searchViewModel.searchUiState.collect{
+                assertEquals(it.isLoading, false)
+                assertEquals(it.error, "some error message")
+                assertEquals(it.searchedEntities, emptyList<SearchedEntity>())
+            }
+        }
     }
 }
